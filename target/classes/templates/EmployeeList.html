@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>EmployeeList</title>
+</head>
+<body>
+  <div>
+      <a th:href="@{/new_employee}">New Employee</a>
+  </div>
+  <h1>Employee List</h1>
+ <table>
+   <tr>
+     <th>No</th>
+     <th>Started Date</th>
+     <th>Names</th>
+     <th>Email</th>
+     <th>Action</th>
+   </tr>
+     <tr th:each="emp , counter : ${employees}">
+         <td th:text="${counter.count}"></td>
+         <td th:text="${emp.startedDate}"></td>
+         <td th:text="${emp.user.firstname}+' '+${emp.user.lastname}"></td>
+         <td th:text="${emp.user.email}"></td>
+         <td>
+             <form th:action="@{/update_employee_form}" method="post">
+                 <input th:hidden="true" type="text" name="emp_id" th:value="${emp.id}">
+                 <button type="submit">Edit</button>
+             </form>
+             <form th:action="@{/delete_employee}" method="post">
+                 <input th:hidden="true" type="text" name="emp_id" th:value="${emp.id}">
+                 <button type="submit">Delete</button>
+             </form>
+         </td>
+     </tr>
+ </table>
+</body>
+</html>
