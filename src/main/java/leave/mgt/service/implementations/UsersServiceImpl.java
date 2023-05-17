@@ -34,4 +34,9 @@ public class UsersServiceImpl implements UsersService {
     public List<Users> allRegisterUser(Users users) {
         return repo.findAll();
     }
+
+    @Override
+    public Users searchUserById(int id) {
+        return repo.findById(id).get();
+    }
 }

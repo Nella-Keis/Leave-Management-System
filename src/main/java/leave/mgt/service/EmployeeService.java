@@ -1,6 +1,7 @@
 package leave.mgt.service;
 
 import leave.mgt.model.Employee;
+import leave.mgt.model.Users;
 
 import java.util.List;
 
@@ -10,4 +11,6 @@ public interface EmployeeService {
     Employee voidEmployee(Employee employee);
     List<Employee> AllEmployee();
     Employee searchEmployeeById(Employee employee);
+
+    Employee searchEmployeeByUser(Users theUser);
 }

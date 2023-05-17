@@ -2,6 +2,8 @@ package leave.mgt.model;
 
 import javax.persistence.*;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
 
 @Entity
@@ -9,6 +11,7 @@ public class Users {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
+    @Column(unique = true)
     private String email;
     private String firstname;
     private String lastname;
@@ -16,7 +19,7 @@ public class Users {
     private Date registeredDate;
     @Column(name="is_active")
     private boolean active;
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
             name="user_role",
             joinColumns = @JoinColumn(name="user_id"),
@@ -24,6 +27,7 @@ public class Users {
     )
     private Set<Role> roles;
     private String password;
+    @Column(unique = true)
     private String username;
 
     public Users() {
@@ -116,4 +120,5 @@ public class Users {
     public void setRoles(Set<Role> roles) {
         this.roles = roles;
     }
+
 }

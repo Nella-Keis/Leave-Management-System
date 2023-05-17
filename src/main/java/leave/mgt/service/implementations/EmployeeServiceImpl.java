@@ -1,6 +1,7 @@
 package leave.mgt.service.implementations;
 
 import leave.mgt.model.Employee;
+import leave.mgt.model.Users;
 import leave.mgt.repository.EmployeeRepository;
 import leave.mgt.service.EmployeeService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,5 +44,10 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Override
     public Employee searchEmployeeById(Employee employee) {
         return repo.findById(employee.getId()).get();
+    }
+
+    @Override
+    public Employee searchEmployeeByUser(Users theUser) {
+        return repo.findEmployeeByUser(theUser);
     }
 }

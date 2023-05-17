@@ -4,11 +4,16 @@ import leave.mgt.model.Employee;
 import leave.mgt.model.Leave;
 import leave.mgt.model.Role;
 import leave.mgt.model.Users;
+import leave.mgt.security.UserCustomDetails;
 import leave.mgt.service.implementations.EmployeeServiceImpl;
 import leave.mgt.service.implementations.LeaveServiceImpl;
 import leave.mgt.service.implementations.RoleServiceImpl;
 import leave.mgt.service.implementations.UsersServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -27,6 +32,8 @@ public class EmployeeController {
     @Autowired private UsersServiceImpl usersService;
     @Autowired private RoleServiceImpl roleService;
     @Autowired private LeaveServiceImpl leaveService;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     @GetMapping("/home")
     public String homePage(Model model){
@@ -53,8 +60,13 @@ public class EmployeeController {
 
     @GetMapping("/employeeProfile")
     public String employeeProfile(Model model){
-        Employee emp = new Employee(1);
-        Employee theEmployee = employeeService.searchEmployeeById(emp);
+        Employee theEmployee = new Employee();
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (!(authentication instanceof AnonymousAuthenticationToken)) {
+            UserCustomDetails userDetails = (UserCustomDetails) authentication.getPrincipal();
+            Users theUser = new Users(userDetails.getUser().getId());
+            theEmployee = employeeService.searchEmployeeByUser(theUser);
+        }
 
         if(theEmployee != null && theEmployee.isActive()){
             List<Leave> leaves = leaveService.allLeave();
@@ -85,43 +97,66 @@ public class EmployeeController {
         return "new-employee";
     }
     @PostMapping("/new_employee")
-    public String saveEmployee(@ModelAttribute("employee") Users theUser){
-        if(theUser != null){
-            Role theRole = roleService.searchRoleByName("EMPLOYEE");
-            if(theRole != null){
+    public String saveEmployee(@ModelAttribute("employee") Users user){
+        if(user != null) {
+            Role role = new Role();
+            role.setName("EMPLOYEE");
+            Role theRole = roleService.searchRoleByName(role.getName());
+
+            if (theRole != null) {
                 Set<Role> roles = new HashSet<>();
                 roles.add(theRole);
-                theUser.setRoles(roles);
+                user.setRoles(roles);
             }
-
-            theUser.setActive(true);
-            theUser.setRegisteredDate(new Date());
-            Users user = usersService.registerUser(theUser);
+            System.out.println("The User Email is: "+user.getEmail());
+            user.setRegisteredDate(new Date());
+            user.setPassword(passwordEncoder.encode(user.getPassword()));
+            Users theUser = usersService.registerUser(user);
             Employee theEmployee = new Employee();
-            theEmployee.setActive(true);
-            theEmployee.setStartedDate(user.getRegisteredDate());
-            theEmployee.setUser(user);
-            Employee emp = employeeService.registerEmployee(theEmployee);
-            if(emp != null){
+            if (theUser != null) {
+                theEmployee.setActive(true);
+                theEmployee.setStartedDate(theUser.getRegisteredDate());
+                theEmployee.setUser(theUser);
+                employeeService.registerEmployee(theEmployee);
                 return "redirect:/all_employee";
             }
         }
+//        if(theUser != null){
+//            Role theRole = roleService.searchRoleByName("EMPLOYEE");
+//            if(theRole != null){
+//                Set<Role> roles = new HashSet<>();
+//                roles.add(theRole);
+//                theUser.setRoles(roles);
+//            }
+//
+//            theUser.setActive(true);
+//            theUser.setRegisteredDate(new Date());
+//            theUser.setPassword(passwordEncoder.encode(theUser.getPassword()));
+//            Users user = usersService.registerUser(theUser);
+//            Employee theEmployee = new Employee();
+//            theEmployee.setActive(true);
+//            theEmployee.setStartedDate(user.getRegisteredDate());
+//            theEmployee.setUser(user);
+//            Employee emp = employeeService.registerEmployee(theEmployee);
+//            if(emp != null){
+//                return "redirect:/all_employee";
+//            }
+//        }
         return "redirect:/new_employee";
     }
     @PostMapping("/update_employee_form")
     public String updateEmployeeForm(Model model , @RequestParam("emp_id") String id){
         if(id != null){
-            Employee employee = new Employee(Integer.parseInt(id));
-            Employee theEmployee = employeeService.searchEmployeeById(employee);
-            model.addAttribute("employee" , theEmployee);
+            Users theUser = usersService.searchUserById(Integer.parseInt(id));
+            model.addAttribute("employee" , theUser);
         }
-        return "update-employee_v1";
+        return "update-employee";
     }
     @PostMapping("/update_employee")
-    public String updateEmployee(@ModelAttribute("employee") Employee theEmployee){
-        if(theEmployee != null){
-            Employee emp = employeeService.updateEmployee(theEmployee);
-            if(emp != null){
+    public String updateEmployee(@ModelAttribute("employee") Users theUser){
+        if(theUser != null){
+            Users user = usersService.updateUser(theUser);
+            if(user != null){
                 return "redirect:/all_employee";
             }
         }
@@ -130,9 +165,9 @@ public class EmployeeController {
     @PostMapping("/delete_employee")
     public String deleteEmployee(@ModelAttribute("emp_id") String id){
         if(id != null){
-            Employee theEmployee = employeeService.searchEmployeeById(new Employee(Integer.parseInt(id)));
-            if(theEmployee != null){
-                Employee employee = employeeService.voidEmployee(theEmployee);
+            Users theUser = usersService.searchUserById(Integer.parseInt(id));
+            if(theUser != null){
+                Employee employee = employeeService.voidEmployee(employeeService.searchEmployeeByUser(theUser));
                 if(employee != null)
                     return "redirect:/all_employee";
             }

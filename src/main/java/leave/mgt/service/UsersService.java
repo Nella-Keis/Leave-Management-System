@@ -9,4 +9,6 @@ public interface UsersService {
     Users updateUser(Users users);
     Users voidUser(Users users);
     List<Users> allRegisterUser(Users users);
+
+    Users searchUserById(int parseInt);
 }

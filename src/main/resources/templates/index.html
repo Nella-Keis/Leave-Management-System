@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns:sec="http://www.w3.org/1999/xhtml">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -57,7 +57,7 @@
   <aside class="main-sidebar sidebar-dark-primary elevation-4">
     <!-- Brand Logo -->
     <a th:href="@{index.html}" class="brand-link" style="height: 50px;">
-      <img th:src="@{dist/img/jamaa.png}" alt="Logo" class="brand-image elevation-3" style="opacity: .8">
+<!--      <img th:src="@{dist/img/jamaa.png}" alt="Logo" class="brand-image elevation-3" style="opacity: .8">-->
       <span class="brand-text font-weight-light"></span>
     </a>
 
@@ -68,9 +68,14 @@
         <div class="image">
           <img th:src="@{dist/img/AdminLTELogo.png}" class="img-circle elevation-2" alt="User Image">
         </div>
-        <div class="info">
-          <a th:href="@{#}" class="d-block">HR</a>
-        </div>
+        <th:block sec:authorize="isAuthenticated()">
+          <div class="info">
+            <a th:href="@{#}" class="d-block"><strong sec:authentication="principal.fullnames"></strong></a>
+            <form th:action="@{/logout}" method="post" th:hidden="false" name="logoutForm" style="margin-top:6px">
+              <i class="ri-logout-circle-r-line"></i><input type="submit" value="logout" style="border-radius: none;border: none; background: none;">
+            </form>
+          </div>
+        </th:block>
       </div>
       <!-- Sidebar Menu -->
       <nav class="mt-2">
@@ -87,27 +92,15 @@
             </a>
             <ul class="nav nav-treeview">
               <li class="nav-item">
-                <a th:href="@{./index.html}" class="nav-link active">
+                <a th:href="@{/home}" class="nav-link active">
                   <i class="far fa-circle nav-icon"></i>
                   <p>Employee Managment</p>
                 </a>
               </li>
               <li class="nav-item">
-                <a th:href="@{./index2.html}" class="nav-link">
+                <a th:href="@{/all-employee-leave}" class="nav-link">
                   <i class="far fa-circle nav-icon"></i>
                   <p>Leave Managment</p>
-                </a>
-              </li>
-              <li class="nav-item">
-                <a th:href="@{./index3.html}" class="nav-link">
-                  <i class="far fa-circle nav-icon"></i>
-                  <p>Room Portal</p>
-                </a>
-              </li>
-              <li class="nav-item">
-                <a th:href="@{./productInventory.html}" class="nav-link">
-                  <i class="far fa-circle nav-icon"></i>
-                  <p>Stock Report</p>
                 </a>
               </li>
             </ul>
@@ -171,11 +164,11 @@
                       <td th:text="${emp.user.email}"></td>
                       <td>
                           <form th:action="@{/update_employee_form}" method="post">
-                              <input th:hidden="true" type="text" name="emp_id" th:value="${emp.id}">
+                              <input th:hidden="true" type="text" name="emp_id" th:value="${emp.user.id}">
                               <button type="submit"><i class="fas fa-edit"></i>Edit</button>
                           </form>
                           <form th:action="@{/delete_employee}" method="post">
-                              <input th:hidden="true" type="text" name="emp_id" th:value="${emp.id}">
+                              <input th:hidden="true" type="text" name="emp_id" th:value="${emp.user.id}">
                               <button type="submit"><i class="fas fa-edit"></i>Delete</button>
                           </form>
                       </td>
